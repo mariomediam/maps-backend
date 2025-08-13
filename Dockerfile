@@ -12,19 +12,25 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Instalar herramientas básicas útiles
+# Copiar todo el código fuente al contenedor
+COPY . /app/
+
+# Instalar herramientas básicas útiles (opcional para producción)
 RUN apt-get update && apt-get install -y \
-    vim \
-    nano \
     curl \
-    wget \
     && rm -rf /var/lib/apt/lists/*
+
+# Cambiar al directorio de Django donde está manage.py
+WORKDIR /app/maps
 
 # Exponer el puerto 8000 para Django
 EXPOSE 8000
 
-# Crear script de inicio
-RUN echo '#!/bin/bash\ncd /app\nif [ -f "maps/manage.py" ]; then\n    echo "Ejecutando Django desde /app/maps..."\n    cd maps\n    python manage.py runserver 0.0.0.0:8000\nelse\n    echo "No se encontró manage.py, manteniendo contenedor activo..."\n    tail -f /dev/null\nfi' > /start.sh && chmod +x /start.sh
+# Configurar variables de entorno para producción
+ENV DJANGO_SETTINGS_MODULE=maps.settings
+ENV PYTHONPATH=/app/maps
 
-# Ejecutar el script de inicio
-CMD ["/start.sh"]
+# Ejecutar migraciones y colectar archivos estáticos, luego iniciar el servidor
+CMD python manage.py migrate --noinput && \
+    python manage.py collectstatic --noinput && \
+    python manage.py runserver 0.0.0.0:8000
