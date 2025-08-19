@@ -17,6 +17,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copiar el resto del código de la aplicación
 COPY . /app/
 
+# Recolectar archivos estáticos
+RUN python manage.py collectstatic --noinput
+
 # Exponer el puerto 8000 para acceder a Django
 EXPOSE 8000
 
