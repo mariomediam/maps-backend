@@ -34,8 +34,26 @@ SECRET_KEY = environ.get('DJANGO_SECRET_KEY', 'v4c!bm)=hovxvpigzoi&lqu_jgw4e*3yx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
 
+ALLOWED_HOSTS = [
+    'maps-backend-oj87.onrender.com',  # Dominio de Render
+    'localhost',
+    '127.0.0.1',
+    '190.119.224.51',    # Tu IP específica
+    '172.18.0.1',        # IP de Docker
+]
+
+
+# Configuración adicional de seguridad
+if not DEBUG:
+    # Configuración de seguridad para producción
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
 
 # Application definition
 
@@ -46,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'app_maps',
     'rest_framework',
 ]
@@ -53,6 +72,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -122,6 +142,27 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Configuración de REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',        
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+
+# Configuración de JWT
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'username',
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'UPDATE_LAST_LOGIN': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -144,3 +185,71 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Cloudflare R2 settings
+# R2_ACCESS_KEY_ID = environ.get('R2_ACCESS_KEY_ID')
+# R2_SECRET_ACCESS_KEY = environ.get('R2_SECRET_ACCESS_KEY')
+# R2_ENDPOINT_URL = environ.get('R2_ENDPOINT_URL')
+# R2_BUCKET_NAME = environ.get('R2_BUCKET_NAME')
+# R2_PUBLIC_URL = environ.get('R2_PUBLIC_URL')
+
+# Configuración de CORS
+CORS_ALLOW_ALL_ORIGINS = False  # Desactivar acceso desde cualquier origen
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://maps-backend-oj87.onrender.com",
+    "http://190.119.224.51:3000",
+    "http://190.119.224.51",
+    "http://172.18.0.1:3000",
+    "http://172.18.0.1",
+]
+
+
+# Métodos HTTP permitidos
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Headers permitidos
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Tiempo máximo de caché para las respuestas preflight
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 horas
+
+# Configuración de seguridad
+if not DEBUG:
+    SECURE_SSL_REDIRECT = False  # Desactivar redirección SSL en Render
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    CSRF_TRUSTED_ORIGINS = [
+        "https://maps-backend-oj87.onrender.com",
+        "http://190.119.224.51",
+        "http://190.119.224.51:3000",
+        "http://172.18.0.1",
+        "http://172.18.0.1:3000"
+    ]
+
+# Configuración de seguridad adicional
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
