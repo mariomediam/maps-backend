@@ -99,7 +99,22 @@ class StateView(APIView):
         
 
 class IncidentView(APIView):
-    permission_classes = [IsAuthenticated]
+    """
+    Vista para manejar incidentes con autenticación diferencial:
+    - GET: No requiere autenticación (ciudadanos pueden consultar)
+    - POST: Requiere autenticación (solo usuarios autenticados pueden crear)
+    """
+    
+    def get_permissions(self):
+        """
+        Retorna los permisos requeridos según el método HTTP
+        """
+        if self.request.method == 'GET':
+            permission_classes = [AllowAny]
+        else:  # POST, PUT, PATCH, DELETE
+            permission_classes = [IsAuthenticated]
+        
+        return [permission() for permission in permission_classes]
     
     def post(self, request):
         try:
@@ -119,3 +134,26 @@ class IncidentView(APIView):
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to add incident"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def get(self, request):
+        """
+        Obtiene incidentes con filtros opcionales via query parameters.
+        No requiere autenticación - acceso público para ciudadanos.
+        """
+        try:
+            incident_service = IncidentService()
+            # Usar query_params para GET requests (buena práctica REST)
+            filters = dict(request.query_params.items())
+            incidents = incident_service.get_incidents_by_filters(**filters)
+            return Response({
+                'message': "Incidents retrieved successfully",
+                'content': incidents
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve incidents"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+        
