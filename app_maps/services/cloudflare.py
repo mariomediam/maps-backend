@@ -32,14 +32,10 @@ class CloudflareService:
             Dict[str, Any]: Diccionario con la key del archivo en R2
         """
         try:
-            # Generar un nombre único para el archivo
-            print("******* 5 *******")
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            print("******* 6 *******")
-            file_extension = os.path.splitext(file_path)[1]
-            print("******* 7 *******")
-            r2_key = f"incidents/{id_incident}/{timestamp}{file_extension}"
-            print("******* 8 *******")
+            # Generar un nombre único para el archivo            
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')            
+            file_extension = os.path.splitext(file_path)[1]            
+            r2_key = f"incidents/{id_incident}/{timestamp}{file_extension}"                
 
             # Subir el archivo
             with open(file_path, 'rb') as file:
@@ -48,9 +44,7 @@ class CloudflareService:
                     self.bucket_name,
                     r2_key,
                     ExtraArgs={'ContentType': content_type}
-                )
-
-            print("******* 9 *******")
+                )   
 
             return {
                 'r2_key': r2_key,
