@@ -42,7 +42,7 @@ class PhotographySerializer(serializers.ModelSerializer):
     """Serializer for Photography model"""
     class Meta:
         model = Photography
-        fields = ['id_photography', 'incident', 'url', 'upload_date']
+        fields = ['id_photography', 'name', 'content_type', 'file_size', 'r2_key', 'upload_date']
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
@@ -60,6 +60,9 @@ class IncidentSerializer(serializers.ModelSerializer):
     inspector_username = serializers.CharField(source='inspector.username', read_only=True)
     closure_user_username = serializers.CharField(source='closure_user.username', read_only=True)
     
+    # Incluir fotografías relacionadas
+    photographs = PhotographySerializer(many=True, read_only=True)
+    
     class Meta:
         model = Incident
         fields = [
@@ -69,7 +72,8 @@ class IncidentSerializer(serializers.ModelSerializer):
             'citizen_name', 'citizen_lastname', 'citizen_phone', 'citizen_email',
             'priority', 'priority_name', 'derivation_document',
             'closure_type', 'closure_type_name', 'closure_description',
-            'closure_date', 'closure_user', 'closure_user_username'
+            'closure_date', 'closure_user', 'closure_user_username',
+            'photographs'  # Añadir el campo de fotografías
         ]
 
 
