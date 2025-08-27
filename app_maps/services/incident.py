@@ -24,83 +24,83 @@ class IncidentService:
         return serializer.data
     
     def add_incident(self, **kwargs):
+
+        try:
         
-        category_id = kwargs.get('category_id')
-        latitude = kwargs.get('latitude')
-        longitude = kwargs.get('longitude')
-        summary = kwargs.get('summary')
-        reference = kwargs.get('reference')
-        login = kwargs.get('login')
-        files = kwargs.get('files')
+            category_id = kwargs.get('category_id')
+            latitude = kwargs.get('latitude')
+            longitude = kwargs.get('longitude')
+            summary = kwargs.get('summary')
+            reference = kwargs.get('reference')
+            login = kwargs.get('login')
+            files = kwargs.get('files')
 
-        inspector = None
-        citizen_name = None
-        citizen_lastname = None
-        citizen_phone = None
-        citizen_email = None
+            inspector = None
+            citizen_name = None
+            citizen_lastname = None
+            citizen_phone = None
+            citizen_email = None
 
 
-        if login:
-            show_on_map = True
-            inspector = User.objects.get(username=kwargs.get('login'))
-            user_type = 'inspector'
-        else:
-            show_on_map = False
-            citizen_name = kwargs.get('citizen_name')
-            citizen_lastname = kwargs.get('citizen_lastname')
-            citizen_phone = kwargs.get('citizen_phone')
-            citizen_email = kwargs.get('citizen_email')
-            user_type = 'citizen'        
+            if login:
+                show_on_map = True
+                inspector = User.objects.get(username=kwargs.get('login'))
+                user_type = 'inspector'
+            else:
+                show_on_map = False
+                citizen_name = kwargs.get('citizen_name')
+                citizen_lastname = kwargs.get('citizen_lastname')
+                citizen_phone = kwargs.get('citizen_phone')
+                citizen_email = kwargs.get('citizen_email')
+                user_type = 'citizen'        
 
-        incident = Incident.objects.create(
-            user_type=user_type,
-            category_id=category_id,
-            latitude=latitude,
-            longitude=longitude,
-            summary=summary,
-            reference=reference,
-            show_on_map=show_on_map,            
-            inspector=inspector,
-            citizen_name=citizen_name,
-            citizen_lastname=citizen_lastname,
-            citizen_phone=citizen_phone,
-            citizen_email=citizen_email,
-        )
+            incident = Incident.objects.create(
+                user_type=user_type,
+                category_id=category_id,
+                latitude=latitude,
+                longitude=longitude,
+                summary=summary,
+                reference=reference,
+                show_on_map=show_on_map,            
+                inspector=inspector,
+                citizen_name=citizen_name,
+                citizen_lastname=citizen_lastname,
+                citizen_phone=citizen_phone,
+                citizen_email=citizen_email,
+            )
 
-        for file in files:
-            self.add_photography(incident.id_incident, file)
+            for file in files:
+                self.add_photography(incident.id_incident, file)
 
-        serializer = IncidentSerializer(incident)
-        return serializer.data
+            serializer = IncidentSerializer(incident)
+            return serializer.data
+        
+        except Exception as e:
+            if incident:
+                incident.delete()
+            raise Exception(e)
 
 
         
     def add_photography(self, id_incident: int, file: UploadedFile):
-
-        print("******* 1 *******")
+        
 
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
-            print("******* 2 *******")
             for chunk in file.chunks():
                 temp_file.write(chunk)
             temp_file.seek(0)
 
-            print("******* 3 *******")
-
             upload_file_service = CloudflareService()
-            success, r2_key = upload_file_service.upload_file(temp_file.name, id_incident, file.content_type)
-
-            print("******* 4 *******")
-
-            if not success:
-                # Eliminar incidencia de base de datos si no se sube el archivo
-                incident = Incident.objects.get(id_incident=id_incident)
-                incident.delete()
-                raise Exception('Error subiendo el archivo')
+            response_upload = upload_file_service.upload_file(temp_file.name, id_incident, file.content_type)
+            success = response_upload.get('success', False)
+            r2_key = response_upload.get('r2_key', None)
+            error = response_upload.get('error', 'Error subiendo el archivo')
+            
+            if not success:                
+                raise Exception(error)                
             
             photography_service = PhotographyService()
 
-            print("******* 10 *******")
             info_photography = {
                 'id_incident': id_incident,
                 'name': file.name,
@@ -108,8 +108,6 @@ class IncidentService:
                 'file_size': file.size,
                 'r2_key': r2_key
             }
-            print("******* 11 *******")
             photography_service.add_photography(**info_photography)
-            print("******* 12 *******")
                     
          
