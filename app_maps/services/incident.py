@@ -14,26 +14,26 @@ class IncidentService:
         serializer = IncidentSerializer(incidents, many=True)
     
     def get_incident_by_id(self, id: int):
-        # Optimización: usar select_related para evitar N+1 queries
+       # Optimización: usar select_related y prefetch_related para evitar N+1 queries
         incident = Incident.objects.select_related(
             'category',
             'priority', 
             'closure_type',
             'inspector',
             'closure_user'
-        ).get(id_incident=id)  # Corregido: usar id_incident que es el campo real
+        ).prefetch_related('photographs').get(id_incident=id)
         serializer = IncidentSerializer(incident)
         return serializer.data
     
     def get_all_incidents(self):
-        # Optimización: usar select_related para evitar N+1 queries
+        # Optimización: usar select_related y prefetch_related para evitar N+1 queries
         incidents = Incident.objects.select_related(
             'category',
             'priority', 
             'closure_type',
             'inspector',
             'closure_user'
-        )
+        ).prefetch_related('photographs')
         serializer = IncidentSerializer(incidents, many=True)
         return serializer.data
     
@@ -137,15 +137,15 @@ class IncidentService:
             from_date = None
             to_date = None
 
-        # Optimización: usar select_related para evitar N+1 queries
-        # select_related para relaciones ForeignKey (OneToOne)
+        # Optimización: usar select_related y prefetch_related para evitar N+1 queries
+        # select_related para relaciones ForeignKey, prefetch_related para OneToMany
         incidents = Incident.objects.select_related(
             'category',           # Para category.description
             'priority',           # Para priority.description  
             'closure_type',       # Para closure_type.description
             'inspector',          # Para inspector.username
             'closure_user'        # Para closure_user.username
-        )
+        ).prefetch_related('photographs')  # Para fotografías (OneToMany)
 
         if id_category:
             incidents = incidents.filter(category_id=id_category)
