@@ -14,12 +14,26 @@ class IncidentService:
         serializer = IncidentSerializer(incidents, many=True)
     
     def get_incident_by_id(self, id: int):
-        incident = Incident.objects.get(id=id)
+        # Optimización: usar select_related para evitar N+1 queries
+        incident = Incident.objects.select_related(
+            'category',
+            'priority', 
+            'closure_type',
+            'inspector',
+            'closure_user'
+        ).get(id_incident=id)  # Corregido: usar id_incident que es el campo real
         serializer = IncidentSerializer(incident)
         return serializer.data
     
     def get_all_incidents(self):
-        incidents = Incident.objects.all()
+        # Optimización: usar select_related para evitar N+1 queries
+        incidents = Incident.objects.select_related(
+            'category',
+            'priority', 
+            'closure_type',
+            'inspector',
+            'closure_user'
+        )
         serializer = IncidentSerializer(incidents, many=True)
         return serializer.data
     
@@ -109,5 +123,52 @@ class IncidentService:
                 'r2_key': r2_key
             }
             photography_service.add_photography(**info_photography)
-                    
-         
+
+    def get_incidents_by_filters(self, **kwargs):
+        id_category = kwargs.get('id_category')
+        id_state = kwargs.get('id_state')
+        show_on_map = kwargs.get('show_on_map')
+        
+        registration_period = kwargs.get('registration_period')
+        if registration_period:
+            from_date = registration_period.get('from_date')
+            to_date = registration_period.get('to_date')
+        else:
+            from_date = None
+            to_date = None
+
+        # Optimización: usar select_related para evitar N+1 queries
+        # select_related para relaciones ForeignKey (OneToOne)
+        incidents = Incident.objects.select_related(
+            'category',           # Para category.description
+            'priority',           # Para priority.description  
+            'closure_type',       # Para closure_type.description
+            'inspector',          # Para inspector.username
+            'closure_user'        # Para closure_user.username
+        )
+
+        if id_category:
+            incidents = incidents.filter(category_id=id_category)
+
+        if id_state:            
+            if id_state == 3:
+                incidents = incidents.filter(is_closed=True)
+            elif id_state == 2:
+                incidents = incidents.filter(is_closed=False, priority__isnull=False)
+            elif id_state == 1:
+                incidents = incidents.filter(is_closed=False, priority__isnull=True)
+            
+
+        if registration_period:
+            incidents = incidents.filter(registration_date__range=(from_date, to_date))
+
+        if show_on_map:
+            incidents = incidents.filter(show_on_map=show_on_map)
+
+        serializer = IncidentSerializer(incidents, many=True)
+        return serializer.data
+    
+    
+
+        
+        
