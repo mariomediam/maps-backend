@@ -380,6 +380,14 @@ class IncidentState(models.Model):
         verbose_name="Description",
         db_column='description'
     )
+    color = models.CharField(
+        max_length=200, 
+        null=False, 
+        blank=False, 
+        verbose_name="Color",
+        db_column='color',
+        default='#000000'
+    )
     
     class Meta:
         verbose_name = "Incident State"
