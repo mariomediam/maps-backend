@@ -207,8 +207,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = False  # Desactivar acceso desde cualquier origen
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "https://maps-backend-oj87.onrender.com",
     "http://190.119.224.51:3000",
     "http://190.119.224.51",
