@@ -85,23 +85,40 @@ class CloudflareService:
                 'error': str(e)
             }
 
-    def get_file_url(self, r2_key: str, expiration: int = 3600) -> Optional[str]:
+    def get_file_url(self, r2_key: str, expiration: int = 300) -> Optional[str]:
         """
         Genera una URL temporal para acceder al archivo.
         
         Args:
             r2_key (str): Key del archivo en R2
-            expiration (int): Tiempo de expiración en segundos (default: 1 hora)
+            expiration (int): Tiempo de expiración en segundos (default: 1 minuto)
             
         Returns:
             Optional[str]: URL temporal del archivo o None si hay error
         """
         try:
+
+
+            print("***** 1 ******")
+            print(self.bucket_name)
+            print(r2_key)
+            print(expiration)
+            print("***** 2 ******")
             url = self.s3_client.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': self.bucket_name, 'Key': r2_key},
                 ExpiresIn=expiration
             )
+
+
+            #  url = s3_client.generate_presigned_url(
+            #     'get_object',
+            #     Params={
+            #         'Bucket': settings.R2_BUCKET_NAME,
+            #         'Key': attachment.r2_key
+            #     },
+            #     ExpiresIn=60  # 1 minuto en segundos
+            # )
             return url
             
         except Exception as e:
