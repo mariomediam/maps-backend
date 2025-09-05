@@ -35,7 +35,7 @@ class IncidentStateSerializer(serializers.ModelSerializer):
     """Serializer for IncidentState model"""
     class Meta:
         model = IncidentState
-        fields = ['id_state', 'description']
+        fields = ['id_state', 'description', 'color']
 
 
 class PhotographySerializer(serializers.ModelSerializer):
