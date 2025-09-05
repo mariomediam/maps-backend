@@ -13,6 +13,7 @@ from app_maps.serializers import IncidentCategorySerializer
 from app_maps.services.states import StateService
 from app_maps.services.categories import CategoryService
 from app_maps.services.incident import IncidentService
+from app_maps.services.photography import PhotographyService
 
 def index(request):
     return HttpResponse("Conexión exitosa")
@@ -156,4 +157,27 @@ class IncidentView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
-        
+class PhotographyView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, id_photography):
+        try:
+            photography_service = PhotographyService()
+            print("***** 1 ******")
+            photography = photography_service.get_photography_by_id(id_photography)
+            print("***** 2 ******")
+            url = photography_service.get_photography_url(id_photography)
+            print("***** 3 ******")
+            photography['url'] = url
+            print("***** 4 ******")
+            
+            return Response({
+                'message': "Photography URL retrieved successfully",
+                'content': photography
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve photography URL"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
