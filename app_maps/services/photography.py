@@ -1,5 +1,6 @@
 from app_maps.models import Photography
 from app_maps.serializers import PhotographySerializer
+from app_maps.services.cloudflare import CloudflareService
 
 class PhotographyService:
     
@@ -28,8 +29,17 @@ class PhotographyService:
         }
     
     
-    def get_photography(self, incident_id: int):
-        pass
+    def get_photography_url(self, id_photography: int):
+        photography = Photography.objects.get(id_photography=id_photography)
+        cloudflare_service = CloudflareService()
+        url = cloudflare_service.get_file_url(photography.r2_key)
+        return url
+    
+    def get_photography_by_id(self, id_photography: int):
+        photography = Photography.objects.get(id_photography=id_photography)
+        serializer = PhotographySerializer(photography)
+        return serializer.data
+        
 
     def delete_photography(self, incident_id: int):
         pass
