@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
-from app_maps.models import Incident, Photography
+from app_maps.models import Incident, Photography, IncidentState
 
-from app_maps.serializers import IncidentSerializer, PhotographySerializer
+from app_maps.serializers import IncidentSerializer, PhotographySerializer, IncidentStateSerializer
 from app_maps.services.cloudflare import CloudflareService
 from app_maps.services.photography import PhotographyService
 
@@ -150,12 +150,13 @@ class IncidentService:
         if id_category:
             incidents = incidents.filter(category_id=id_category)
 
-        if id_state:            
-            if id_state == 3:
+        if id_state: 
+            id_state = int(id_state)                        
+            if id_state == 3:            
                 incidents = incidents.filter(is_closed=True)
-            elif id_state == 2:
+            elif id_state == 2:            
                 incidents = incidents.filter(is_closed=False, priority__isnull=False)
-            elif id_state == 1:
+            elif id_state == 1:            
                 incidents = incidents.filter(is_closed=False, priority__isnull=True)
             
 
@@ -164,11 +165,59 @@ class IncidentService:
 
         if show_on_map:
             incidents = incidents.filter(show_on_map=show_on_map)
-
+        
         serializer = IncidentSerializer(incidents, many=True)
+
+        incidentes_serializer = serializer.data
+        incidentes_serializer_with_state = []
+
+        # Optimización: crear diccionario indexado de estados una sola vez
+        states_dict = self.get_states_dict()
+
+        # Optimización: usar list comprehension en lugar de loop + append
+        incidentes_serializer_with_state = [
+            self.add_state_to_incident(incident, states_dict) 
+            for incident in incidentes_serializer
+        ]
+
+        return incidentes_serializer_with_state
+    
+    def get_all_states(self):
+        states = IncidentState.objects.all()
+        serializer = IncidentStateSerializer(states, many=True)
         return serializer.data
     
-    
+    def get_states_dict(self):
+        """Optimización: retorna un diccionario indexado por id_state para búsquedas O(1)"""
+        states_list = self.get_all_states()
+        return {state['id_state']: state for state in states_list}
 
         
+    def add_state_to_incident(self, incident_serializer: dict, states_dict: dict):
+        """Optimizada: usa diccionario indexado para búsquedas O(1) en lugar de O(n)"""
+        if not states_dict:
+            states_dict = self.get_states_dict()
+
+        # Determinar el id_state basado en la lógica del negocio
+        if incident_serializer.get('is_closed') == True:
+            state_id = 3  # Resuelto
+        elif incident_serializer.get('priority') is not None:
+            state_id = 2  # En proceso
+        else:
+            state_id = 1  # Presentado
+        
+        # Búsqueda optimizada O(1) usando diccionario
+        state = states_dict.get(state_id)
+        
+        if state:
+            incident_serializer['id_state'] = state['id_state']
+            incident_serializer['description_state'] = state['description']
+            incident_serializer['color_state'] = state.get('color', '#000000')
+        else:
+            # Estado por defecto si no se encuentra
+            incident_serializer['id_state'] = 1
+            incident_serializer['description_state'] = 'Estado desconocido'
+            incident_serializer['color_state'] = '#000000'
+
+        return incident_serializer
         
