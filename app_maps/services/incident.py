@@ -22,8 +22,13 @@ class IncidentService:
             'inspector',
             'closure_user'
         ).prefetch_related('photographs').get(id_incident=id)
-        serializer = IncidentSerializer(incident)
-        return serializer.data
+        incident_serializer = IncidentSerializer(incident)
+
+        incident_serializer_data = incident_serializer.data
+
+        incident_serializer_data = self.add_state_to_incident(incident_serializer_data, self.get_states_dict())
+
+        return incident_serializer_data
     
     def get_all_incidents(self):
         # Optimización: usar select_related y prefetch_related para evitar N+1 queries
