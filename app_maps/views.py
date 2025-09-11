@@ -145,6 +145,7 @@ class IncidentView(APIView):
             incident_service = IncidentService()
             # Usar query_params para GET requests (buena práctica REST)
             filters = dict(request.query_params.items())
+            print("***** se ejecuto el get de incidentes ****** con los filtros: ", filters)
             incidents = incident_service.get_incidents_by_filters(**filters)
             return Response({
                 'message': "Incidents retrieved successfully",
@@ -162,14 +163,11 @@ class PhotographyView(APIView):
 
     def get(self, request, id_photography):
         try:
-            photography_service = PhotographyService()
-            print("***** 1 ******")
-            photography = photography_service.get_photography_by_id(id_photography)
-            print("***** 2 ******")
-            url = photography_service.get_photography_url(id_photography)
-            print("***** 3 ******")
-            photography['url'] = url
-            print("***** 4 ******")
+            print("***** se ejecuto el get de fotografia ****** con el id: ", id_photography)
+            photography_service = PhotographyService()            
+            photography = photography_service.get_photography_by_id(id_photography)            
+            url = photography_service.get_photography_url(id_photography)            
+            photography['url'] = url            
             
             return Response({
                 'message': "Photography URL retrieved successfully",
@@ -181,3 +179,20 @@ class PhotographyView(APIView):
                 "message": "Failed to retrieve photography URL"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class IncidentDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, id_incident):
+        try:
+            incident_service = IncidentService()
+            incident = incident_service.get_incident_by_id(id_incident)
+            return Response({
+                'message': "Incident retrieved successfully",
+                'content': incident
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve incident"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
