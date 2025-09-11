@@ -9,4 +9,5 @@ urlpatterns = [
     path("states/", views.StateView.as_view(), name="states"),
     path("incidents/", views.IncidentView.as_view(), name="incidents"),
     path("incidents/photography/<int:id_photography>/", views.PhotographyView.as_view(), name="photographies"),
+    path("incidents/<int:id_incident>/", views.IncidentDetailView.as_view(), name="incident-detail"),
 ]
