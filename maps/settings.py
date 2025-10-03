@@ -42,7 +42,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '190.119.224.51',    # Tu IP específica
     '172.18.0.1',        # IP de Docker
-    'incidentes-viales.netlify.app'
+    'incidentes-viales.netlify.app',
+    'incidentes-viales-dev.netlify.app'
 ]
 
 
@@ -215,7 +216,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://190.119.224.51",
     "http://172.18.0.1:3000",
     "http://172.18.0.1",
-    "https://incidentes-viales.netlify.app"
+    "https://incidentes-viales.netlify.app",
+    "https://incidentes-viales-dev.netlify.app"
 ]
 
 
@@ -259,7 +261,8 @@ if not DEBUG:
         "http://190.119.224.51:3000",
         "http://172.18.0.1",
         "http://172.18.0.1:3000",
-        "https://incidentes-viales.netlify.app"
+        "https://incidentes-viales.netlify.app",
+        "https://incidentes-viales-dev.netlify.app"
     ]
 
 # Configuración de seguridad adicional
