@@ -179,6 +179,23 @@ class PhotographyView(APIView):
                 "message": "Failed to retrieve photography URL"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class PhotographyMiniatureView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, id_incident):
+        try:
+            incident_service = IncidentService()
+            url = incident_service.get_photography_miniature_url(id_incident)
+            return Response({
+                'message': "Photography miniature URL retrieved successfully",
+                'content': url
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve photography miniature URL"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class IncidentDetailView(APIView):
     permission_classes = [AllowAny]

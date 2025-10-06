@@ -258,3 +258,10 @@ class IncidentService:
 
         return incident_serializer
         
+
+    
+    def get_photography_miniature_url(self, id_incident: int):
+        key = f"incidents/{id_incident}/miniature.jpg"
+        cloudflare_service = CloudflareService()
+        url = cloudflare_service.get_file_url(key)
+        return url

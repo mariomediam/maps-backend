@@ -100,6 +100,10 @@ class CloudflareService:
             Optional[str]: URL temporal del archivo o None si hay error
         """
         try:
+
+            if not self.file_exists(r2_key):
+                return None
+
             url = self.s3_client.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': self.bucket_name, 'Key': r2_key},
