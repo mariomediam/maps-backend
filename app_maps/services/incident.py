@@ -4,7 +4,7 @@ from app_maps.models import Incident, Photography, IncidentState
 from app_maps.serializers import IncidentSerializer, PhotographySerializer, IncidentStateSerializer
 from app_maps.services.cloudflare import CloudflareService
 from app_maps.services.photography import PhotographyService
-
+from app_maps.services.file_utils import FileUtils
 from django.core.files.uploadedfile import UploadedFile
 import tempfile
 
@@ -91,6 +91,9 @@ class IncidentService:
             for file in files:
                 self.add_photography(incident.id_incident, file)
 
+            if len(files) > 0:
+                self.add_photography_miniature(incident.id_incident, files[0])
+
             serializer = IncidentSerializer(incident)
             return serializer.data
         
@@ -103,9 +106,12 @@ class IncidentService:
         
     def add_photography(self, id_incident: int, file: UploadedFile):
         
+        # Optimizar la imagen antes de subirla
+        file_utils = FileUtils()
+        optimized_file = file_utils.optimize_image(file, max_width=1024, max_height=1024, quality=80)
 
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
-            for chunk in file.chunks():
+            for chunk in optimized_file.chunks():
                 temp_file.write(chunk)
             temp_file.seek(0)
 
@@ -128,6 +134,29 @@ class IncidentService:
                 'r2_key': r2_key
             }
             photography_service.add_photography(**info_photography)
+
+    def add_photography_miniature(self, id_incident: int, file: UploadedFile):
+         # Optimizar la imagen antes de subirla
+        file_utils = FileUtils()
+        optimized_file = file_utils.optimize_image(file, max_width=128, max_height=128, quality=80)
+
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            for chunk in optimized_file.chunks():
+                temp_file.write(chunk)
+            temp_file.seek(0)
+
+            upload_file_service = CloudflareService()
+            response_upload = upload_file_service.upload_file(temp_file.name, id_incident, file.content_type, name_key='miniature.jpg')
+            success = response_upload.get('success', False)
+            r2_key = response_upload.get('r2_key', None)
+            error = response_upload.get('error', 'Error subiendo el archivo')
+            
+            if not success:                
+                raise Exception(error)                
+
+            return r2_key
+            
+
 
     def get_incidents_by_filters(self, **kwargs):
         id_category = kwargs.get('id_category')
@@ -186,6 +215,9 @@ class IncidentService:
         ]
 
         return incidentes_serializer_with_state
+
+    
+
     
     def get_all_states(self):
         states = IncidentState.objects.all()

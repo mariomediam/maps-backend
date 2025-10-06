@@ -19,7 +19,7 @@ class CloudflareService:
         )
         self.bucket_name = settings.R2_BUCKET_NAME
 
-    def upload_file(self, file_path: str, id_incident: str, content_type: str) -> Dict[str, Any]:
+    def upload_file(self, file_path: str, id_incident: str, content_type: str, name_key: str = None) -> Dict[str, Any]:
         """
         Sube un archivo a Cloudflare R2 y retorna la key del archivo.
         
@@ -32,10 +32,13 @@ class CloudflareService:
             Dict[str, Any]: Diccionario con la key del archivo en R2
         """
         try:
-            # Generar un nombre único para el archivo            
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')            
-            file_extension = os.path.splitext(file_path)[1]            
-            r2_key = f"incidents/{id_incident}/{timestamp}{file_extension}"                
+            # Generar un nombre único para el archivo   
+            if name_key:
+                r2_key = f"incidents/{id_incident}/{name_key}"
+            else:         
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')            
+                file_extension = os.path.splitext(file_path)[1]            
+                r2_key = f"incidents/{id_incident}/{timestamp}{file_extension}"                
 
             # Subir el archivo
             with open(file_path, 'rb') as file:
