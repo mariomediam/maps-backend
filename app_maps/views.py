@@ -188,7 +188,9 @@ class PhotographyMiniatureView(APIView):
             url = incident_service.get_photography_miniature_url(id_incident)
             return Response({
                 'message': "Photography miniature URL retrieved successfully",
-                'content': url
+                'content': {
+                    'url': url
+                }
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({
