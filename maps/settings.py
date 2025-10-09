@@ -43,7 +43,8 @@ ALLOWED_HOSTS = [
     '190.119.224.51',    # Tu IP específica
     '172.18.0.1',        # IP de Docker
     'incidentes-viales.netlify.app',
-    'incidentes-viales-dev.netlify.app'
+    'incidentes-viales-dev.netlify.app',
+    'host.docker.internal',
 ]
 
 
@@ -211,6 +212,8 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:8089",
+    "http://localhost:8089",
     "https://maps-backend-oj87.onrender.com",
     "http://190.119.224.51:3000",
     "http://190.119.224.51",
