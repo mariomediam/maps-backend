@@ -162,6 +162,8 @@ class IncidentService:
         id_category = kwargs.get('id_category')
         id_state = kwargs.get('id_state')
         show_on_map = kwargs.get('show_on_map')
+        text_search = kwargs.get('text_search')
+        id_incident = kwargs.get('id_incident')
         
         registration_period = kwargs.get('registration_period')
         if registration_period:
@@ -181,7 +183,10 @@ class IncidentService:
             'closure_user'        # Para closure_user.username
         ).prefetch_related('photographs')  # Para fotografías (OneToMany)
 
-        if id_category:
+        if id_incident:
+            incidents = incidents.filter(id_incident=id_incident)
+
+        if id_category:            
             incidents = incidents.filter(category_id=id_category)
 
         if id_state: 
@@ -193,13 +198,15 @@ class IncidentService:
             elif id_state == 1:            
                 incidents = incidents.filter(is_closed=False, priority__isnull=True)
             
-
         if registration_period:
             incidents = incidents.filter(registration_date__range=(from_date, to_date))
 
         if show_on_map:
             incidents = incidents.filter(show_on_map=show_on_map)
-        
+
+        if text_search:
+            incidents = incidents.filter(summary__icontains=text_search) | incidents.filter(reference__icontains=text_search) 
+
         serializer = IncidentSerializer(incidents, many=True)
 
         incidentes_serializer = serializer.data

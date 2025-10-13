@@ -144,8 +144,7 @@ class IncidentView(APIView):
         try:
             incident_service = IncidentService()
             # Usar query_params para GET requests (buena práctica REST)
-            filters = dict(request.query_params.items())
-            print("***** se ejecuto el get de incidentes ****** con los filtros: ", filters)
+            filters = dict(request.query_params.items())            
             incidents = incident_service.get_incidents_by_filters(**filters)
             return Response({
                 'message': "Incidents retrieved successfully",
