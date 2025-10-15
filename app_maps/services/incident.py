@@ -272,3 +272,84 @@ class IncidentService:
         cloudflare_service = CloudflareService()
         url = cloudflare_service.get_file_url(key)
         return url
+
+    def update_incident_partial(self, id_incident: int, update_data: dict, user=None):
+        """
+        Actualiza campos específicos de un incidente.
+        Solo permite actualizar campos en la lista blanca.
+        
+        Args:
+            id_incident: ID del incidente a actualizar
+            update_data: Diccionario con los campos a actualizar
+            user: Usuario que realiza la actualización (opcional)
+        
+        Returns:
+            Incidente serializado con los cambios aplicados
+        
+        Raises:
+            ValueError: Si se intenta actualizar un campo no permitido
+            Exception: Si el incidente no existe
+        """
+        # Lista blanca de campos permitidos para actualización parcial
+        ALLOWED_FIELDS = {
+            'show_on_map',      # Mostrar/ocultar en mapa
+            'is_closed',        # Cerrar/abrir incidente
+            'priority',         # Cambiar prioridad (id_priority)
+            'derivation_document',  # Documento de derivación
+            'closure_type',     # Tipo de cierre (id_closure_type)
+            'closure_description',  # Descripción del cierre
+        }
+        
+        try:
+            # Verificar que el incidente existe
+            incident = Incident.objects.get(id_incident=id_incident)
+            
+            # Validar que solo se actualicen campos permitidos
+            invalid_fields = set(update_data.keys()) - ALLOWED_FIELDS
+            if invalid_fields:
+                raise ValueError(
+                    f"Cannot update fields: {', '.join(invalid_fields)}. "
+                    f"Allowed fields: {', '.join(ALLOWED_FIELDS)}"
+                )
+            
+            # Actualizar cada campo proporcionado
+            for field, value in update_data.items():
+                if field == 'show_on_map':
+                    incident.show_on_map = bool(value)
+                
+                elif field == 'is_closed':
+                    incident.is_closed = bool(value)
+                    # Si se está cerrando, registrar fecha y usuario
+                    if incident.is_closed and not incident.closure_date:
+                        from django.utils import timezone
+                        incident.closure_date = timezone.now()
+                        if user:
+                            incident.closure_user = user
+                
+                elif field == 'priority':
+                    # Puede ser None o un ID de prioridad
+                    if value is None:
+                        incident.priority = None
+                    else:
+                        incident.priority_id = int(value)
+                
+                elif field == 'derivation_document':
+                    incident.derivation_document = value if value else None
+                
+                elif field == 'closure_type':
+                    if value is None:
+                        incident.closure_type = None
+                    else:
+                        incident.closure_type_id = int(value)
+                
+                elif field == 'closure_description':
+                    incident.closure_description = value if value else None
+            
+            # Guardar cambios
+            incident.save()
+            
+            # Retornar incidente actualizado serializado
+            return self.get_incident_by_id(id_incident)
+            
+        except Incident.DoesNotExist:
+            raise Exception(f"Incident with ID {id_incident} not found")

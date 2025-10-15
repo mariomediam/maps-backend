@@ -199,7 +199,16 @@ class PhotographyMiniatureView(APIView):
 
 
 class IncidentDetailView(APIView):
-    permission_classes = [AllowAny]
+    
+    def get_permissions(self):
+        """
+        GET: público (AllowAny)
+        PATCH: requiere autenticación (IsAuthenticated)
+        """
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        else:
+            return [IsAuthenticated()]
 
     def get(self, request, id_incident):
         try:
@@ -213,4 +222,45 @@ class IncidentDetailView(APIView):
             return Response({
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to retrieve incident"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def patch(self, request, id_incident):
+        """
+        Actualización parcial de un incidente.
+        Permite actualizar campos específicos como show_on_map, is_closed, etc.
+        """
+        try:
+            incident_service = IncidentService()
+            
+            # Extraer los campos del body
+            update_data = request.data
+            
+            if not update_data:
+                return Response({
+                    'error': 'No data provided for update',
+                    'message': 'Request body cannot be empty'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Actualizar el incidente con los campos proporcionados
+            incident = incident_service.update_incident_partial(
+                id_incident=id_incident, 
+                update_data=update_data,
+                user=request.user
+            )
+            
+            return Response({
+                'message': 'Incident updated successfully',
+                'content': incident
+            }, status=status.HTTP_200_OK)
+            
+        except ValueError as ve:
+            # Errores de validación (campos no permitidos, valores inválidos)
+            return Response({
+                'error': str(ve),
+                'message': 'Validation error'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to update incident"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
