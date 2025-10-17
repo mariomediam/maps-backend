@@ -6,7 +6,8 @@ from .models import (
     IncidentState,
     Incident, 
     Photography, 
-    Attachment
+    Attachment,
+    IncidentPriority
 )
 
 
@@ -99,3 +100,10 @@ class IncidentCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Citizen name is required when user_type is Citizen")
         
         return data
+
+
+class IncidentPrioritySerializer(serializers.ModelSerializer):
+    """Serializer for IncidentPriority model"""
+    class Meta:
+        model = IncidentPriority
+        fields = ['id_priority', 'description']

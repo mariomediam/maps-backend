@@ -14,6 +14,8 @@ from app_maps.services.states import StateService
 from app_maps.services.categories import CategoryService
 from app_maps.services.incident import IncidentService
 from app_maps.services.photography import PhotographyService
+from app_maps.services.priority import PriorityService
+from app_maps.services.clousere_type import ClosureTypeService
 
 def index(request):
     return HttpResponse("Conexión exitosa")
@@ -264,3 +266,41 @@ class IncidentDetailView(APIView):
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to update incident"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PriorityView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            priority_service = PriorityService()
+            priorities = priority_service.get_all_priorities()
+            return Response({
+                'message': "Priorities retrieved successfully",
+                'content': priorities
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve priorities"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class ClosureTypeView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            closure_type_service = ClosureTypeService()
+            closure_types = closure_type_service.get_all_closure_types()
+            return Response({
+                'message': "Closure types retrieved successfully",
+                'content': closure_types
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve closure types"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

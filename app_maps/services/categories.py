@@ -2,9 +2,9 @@ from app_maps.models import IncidentCategory
 from app_maps.serializers import IncidentCategorySerializer
 
 class CategoryService:
-    def __init__(self):
-        categories = IncidentCategory.objects.all()
-        serializer = IncidentCategorySerializer(categories, many=True)
+    # def __init__(self):
+    #     categories = IncidentCategory.objects.all()
+    #     serializer = IncidentCategorySerializer(categories, many=True)
         
     
     def get_category_by_id(self, id: int):

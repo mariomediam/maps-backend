@@ -11,4 +11,6 @@ urlpatterns = [
     path("incidents/photography/<int:id_photography>/", views.PhotographyView.as_view(), name="photographies"),
     path("incidents/<int:id_incident>/", views.IncidentDetailView.as_view(), name="incident-detail"),
     path("incidents/miniature/<int:id_incident>", views.PhotographyMiniatureView.as_view(), name="photography-miniature"),
+    path("priorities/", views.PriorityView.as_view(), name="priorities"),
+    path("closure-types/", views.ClosureTypeView.as_view(), name="closure-types"),
 ]
