@@ -9,6 +9,6 @@ class ClosureTypeService:
         return serializer.data
     
     def get_all_closure_types(self):
-        closure_types = IncidentClosureType.objects.all()
+        closure_types = IncidentClosureType.objects.all().order_by('description')
         serializer = IncidentClosureTypeSerializer(closure_types, many=True)
         return serializer.data
