@@ -39,6 +39,13 @@ class PhotographyService:
         photography = Photography.objects.get(id_photography=id_photography)
         serializer = PhotographySerializer(photography)
         return serializer.data
+
+    def  get_blob_photography_by_id(self, id_photography: int):
+        photography = Photography.objects.get(id_photography=id_photography)
+        cloudflare_service = CloudflareService()
+        blob = cloudflare_service.get_blob(photography.r2_key)
+        print("blob", blob)
+        return blob
         
 
     def delete_photography(self, incident_id: int):
