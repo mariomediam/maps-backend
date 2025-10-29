@@ -17,6 +17,8 @@ from app_maps.services.photography import PhotographyService
 from app_maps.services.priority import PriorityService
 from app_maps.services.clousere_type import ClosureTypeService
 
+
+
 def index(request):
     return HttpResponse("Conexión exitosa")
 
@@ -164,11 +166,10 @@ class PhotographyView(APIView):
 
     def get(self, request, id_photography):
         try:
-            print("***** se ejecuto el get de fotografia ****** con el id: ", id_photography)
-            photography_service = PhotographyService()            
-            photography = photography_service.get_photography_by_id(id_photography)            
-            url = photography_service.get_photography_url(id_photography)            
-            photography['url'] = url            
+            photography_service = PhotographyService()
+            photography = photography_service.get_photography_by_id(id_photography)
+            url = photography_service.get_photography_url(id_photography)
+            photography['url'] = url
             
             return Response({
                 'message': "Photography URL retrieved successfully",
@@ -178,6 +179,39 @@ class PhotographyView(APIView):
             return Response({
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to retrieve photography URL"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PhotographyBlobView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, id_photography):
+        try:
+            photography_service = PhotographyService()
+            
+            # Obtener información de la fotografía
+            photography = photography_service.get_photography_by_id(id_photography)
+            
+            # Obtener el blob (bytes)
+            blob_data = photography_service.get_blob_photography_by_id(id_photography)
+            
+            # Retornar como archivo binario con HttpResponse
+            response = HttpResponse(
+                blob_data, 
+                content_type=photography['content_type']
+            )
+            
+            # Opcional: para que se descargue, usa 'attachment'
+            # Para que se muestre en el navegador, usa 'inline'
+            response['Content-Disposition'] = f'inline; filename="{photography["name"]}"'
+            
+            return response
+            
+        except Exception as e:
+            # Para los errores sí usamos Response de DRF
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve photography blob"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PhotographyMiniatureView(APIView):
