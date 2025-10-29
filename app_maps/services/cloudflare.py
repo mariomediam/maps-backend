@@ -131,3 +131,16 @@ class CloudflareService:
             return True
         except:
             return False
+
+
+
+    def get_blob(self, r2_key: str):
+        """
+        Obtiene un blob del archivo en R2.
+        """
+        try:
+            response = self.s3_client.get_object(Bucket=self.bucket_name, Key=r2_key)
+            return response['Body'].read()
+        except Exception as e:
+            print(f"Error obteniendo blob: {str(e)}")
+            return None
