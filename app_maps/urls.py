@@ -13,4 +13,5 @@ urlpatterns = [
     path("incidents/miniature/<int:id_incident>", views.PhotographyMiniatureView.as_view(), name="photography-miniature"),
     path("priorities/", views.PriorityView.as_view(), name="priorities"),
     path("closure-types/", views.ClosureTypeView.as_view(), name="closure-types"),
+    path("incidents/photography/blob/<int:id_photography>/", views.PhotographyBlobView.as_view(), name="photography-blob"),
 ]
