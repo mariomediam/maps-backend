@@ -353,3 +353,81 @@ class IncidentService:
             
         except Incident.DoesNotExist:
             raise Exception(f"Incident with ID {id_incident} not found")
+
+    def update_incident(self, **kwargs):
+
+        try:
+        
+            id_incident = kwargs.get('id_incident')
+            category_id = kwargs.get('category_id')
+            latitude = kwargs.get('latitude')
+            longitude = kwargs.get('longitude')
+            summary = kwargs.get('summary')
+            reference = kwargs.get('reference')
+            login = kwargs.get('login')
+            files = kwargs.get('files')
+
+            inspector = None
+            citizen_name = None
+            citizen_lastname = None
+            citizen_phone = None
+            citizen_email = None
+
+
+            if login:
+                show_on_map = True
+                inspector = User.objects.get(username=kwargs.get('login'))
+                user_type = 'inspector'
+            else:
+                show_on_map = False
+                citizen_name = kwargs.get('citizen_name')
+                citizen_lastname = kwargs.get('citizen_lastname')
+                citizen_phone = kwargs.get('citizen_phone')
+                citizen_email = kwargs.get('citizen_email')
+                user_type = 'citizen'        
+
+            incident = Incident.objects.get(id_incident=id_incident)
+
+            if not incident:
+                raise Exception(f"Incident with ID {id_incident} not found")
+
+            if incident.is_closed:
+                raise Exception(f"Incident with ID {id_incident} is closed")
+
+           
+
+            self.delete_photographys(incident.id_incident)
+
+            for file in files:
+                self.add_photography(incident.id_incident, file)
+
+            if len(files) > 0:
+                self.add_photography_miniature(incident.id_incident, files[0])
+
+            incident.latitude = latitude
+            incident.longitude = longitude
+            incident.summary = summary
+            incident.reference = reference
+            incident.show_on_map = show_on_map
+            incident.inspector = inspector
+            incident.citizen_name = citizen_name
+            incident.citizen_lastname = citizen_lastname
+            incident.citizen_phone = citizen_phone
+            incident.citizen_email = citizen_email
+            incident.save()
+
+            serializer = IncidentSerializer(incident)
+            return serializer.data
+        
+        except Exception as e:          
+            raise Exception(e)
+
+    def delete_photographys(self, incident_id: int):
+        try:
+            photographs = Photography.objects.filter(incident_id=incident_id)
+            for photograph in photographs:
+                photography_service = PhotographyService()
+                photography_service.delete_photography_by_id(photograph.id_photography)
+            return True
+        except Exception as e:
+            raise Exception(e)
