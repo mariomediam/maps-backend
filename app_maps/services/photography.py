@@ -46,7 +46,12 @@ class PhotographyService:
         blob = cloudflare_service.get_blob(photography.r2_key)
         print("blob", blob)
         return blob
+
+    def delete_photography_by_id(self, id_photography: int):
+        photography = Photography.objects.get(id_photography=id_photography)
+        cloudflare_service = CloudflareService()
+        cloudflare_service.delete_file(photography.r2_key)
+        photography.delete()
+        return True
         
 
-    def delete_photography(self, incident_id: int):
-        pass
