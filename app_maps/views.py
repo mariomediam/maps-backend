@@ -159,6 +159,36 @@ class IncidentView(APIView):
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to retrieve incidents"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    def patch(self, request):
+        try:
+            incident_service = IncidentService()
+            data = request.data.dict()        
+            id_incident = data.get('id_incident')
+
+            if not id_incident:
+                return Response({
+                    'error': 'id_incident is required',
+                    'message': 'id_incident is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+
+
+            files = request.FILES.getlist('files', [])
+            login = request.user.username            
+            data['files'] = files
+            data['login'] = login
+            incident = incident_service.update_incident(**data)
+            return Response({
+                'message': "Incident updated successfully",
+                'content': incident
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to update incident"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
 class PhotographyView(APIView):
