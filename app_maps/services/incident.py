@@ -320,11 +320,14 @@ class IncidentService:
                 elif field == 'is_closed':
                     incident.is_closed = bool(value)
                     # Si se está cerrando, registrar fecha y usuario
-                    if incident.is_closed and not incident.closure_date:
+                    if incident.is_closed:
                         from django.utils import timezone
                         incident.closure_date = timezone.now()
                         if user:
                             incident.closure_user = user
+                    else:
+                        incident.closure_date = None
+                        incident.closure_user = None
                 
                 elif field == 'priority':
                     # Puede ser None o un ID de prioridad
@@ -428,6 +431,16 @@ class IncidentService:
             for photograph in photographs:
                 photography_service = PhotographyService()
                 photography_service.delete_photography_by_id(photograph.id_photography)
+            return True
+        except Exception as e:
+            raise Exception(e)
+
+
+    def delete_incident(self, id_incident: int):
+        try:
+            incident = Incident.objects.get(id_incident=id_incident)
+            self.delete_photographys(incident.id_incident)
+            incident.delete()
             return True
         except Exception as e:
             raise Exception(e)
