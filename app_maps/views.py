@@ -331,6 +331,19 @@ class IncidentDetailView(APIView):
                 "message": "Failed to update incident"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def delete(self, request, id_incident):
+        try:
+            incident_service = IncidentService()
+            incident_service.delete_incident(id_incident)
+            return Response({
+                'message': "Incident deleted successfully",
+                "content": None
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to delete incident"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PriorityView(APIView):
     permission_classes = [AllowAny]
