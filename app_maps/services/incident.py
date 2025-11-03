@@ -444,3 +444,18 @@ class IncidentService:
             return True
         except Exception as e:
             raise Exception(e)
+
+
+    def total_incidents(self):
+        try:
+            total = Incident.objects.count()
+            closed = Incident.objects.filter(is_closed=True).count()
+            pending = total - closed
+            
+            return {
+                'total': total,
+                'closed': closed,
+                'pending': pending
+            }
+        except Exception as e:
+            raise Exception(e)
