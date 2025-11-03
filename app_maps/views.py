@@ -381,3 +381,20 @@ class ClosureTypeView(APIView):
                 "message": "Failed to retrieve closure types"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class TotalIncidentsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            incident_service = IncidentService()
+            total = incident_service.total_incidents()
+            return Response({
+                'message': "Total incidents retrieved successfully",
+                'content': total
+            }, status=status.HTTP_200_OK)   
+        except Exception as e:
+            return Response({
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve total incidents"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
