@@ -450,12 +450,14 @@ class IncidentService:
         try:
             total = Incident.objects.count()
             closed = Incident.objects.filter(is_closed=True).count()
-            pending = total - closed
+            in_progress = Incident.objects.filter(priority__isnull=False, is_closed=False).count()
+            presented = total - closed - in_progress
             
             return {
                 'total': total,
                 'closed': closed,
-                'pending': pending
+                'in_progress': in_progress,
+                'presented': presented
             }
         except Exception as e:
             raise Exception(e)
