@@ -16,7 +16,7 @@ from app_maps.services.incident import IncidentService
 from app_maps.services.photography import PhotographyService
 from app_maps.services.priority import PriorityService
 from app_maps.services.clousere_type import ClosureTypeService
-
+from app_maps.services.tradoc import TradocService
 
 
 def index(request):
@@ -397,4 +397,42 @@ class TotalIncidentsView(APIView):
             return Response({
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to retrieve total incidents"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TradocView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            opcion = request.query_params.get('opcion')
+            depend = request.query_params.get('depend')
+            numero = request.query_params.get('numero')
+            c_docum = request.query_params.get('c_docum')
+
+            tradoc_service = TradocService()
+
+            if opcion == 'NUMERO':
+                if not depend or not numero:
+                    return Response({
+                        'error': 'Depend y numero son requeridos',
+                        'message': 'Depend y numero son requeridos'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                tradoc = tradoc_service.get_tradoc_by_depend_numero(depend, numero)
+            elif opcion == 'C_DOCUM':
+                if c_docum is None:
+                    return Response(
+                        data={"message": "Ingrese código de documento", "content": None},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                tradoc = tradoc_service.get_tradoc_by_c_docum(c_docum)
+
+            return Response(data={
+                'message': "Tradoc retrieved successfully",
+                'content': tradoc
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(data={
+                "error": f"Internal server error: {str(e)}",
+                "message": "Failed to retrieve tradoc"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
