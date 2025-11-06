@@ -15,4 +15,5 @@ urlpatterns = [
     path("closure-types/", views.ClosureTypeView.as_view(), name="closure-types"),
     path("incidents/photography/blob/<int:id_photography>/", views.PhotographyBlobView.as_view(), name="photography-blob"),
     path("incidents/total/", views.TotalIncidentsView.as_view(), name="total-incidents"),
+    path("tradoc/", views.TradocView.as_view(), name="tradoc"),
 ]
