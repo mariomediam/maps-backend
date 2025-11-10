@@ -17,10 +17,15 @@ class TradocService:
         response = requests.get(url)
         return response.json()
 
-
     def get_tradoc_by_c_docum(self, c_docum: str):
         url = f'http://{self.SIAC_IP}:{self.SIAC_PORT}/api/tradoc/selecc-docum?opcion=C_DOCUM&c_docum={c_docum}'
         response = requests.get(url)
         return response.json()
+
+    def get_path(self, c_docum: str):
+        url = f'http://{self.SIAC_IP}:{self.SIAC_PORT}/api/tradoc/ver-ultima-rama-arbol?c_docum={c_docum}'
+        response = requests.get(url)
+        return response.json()
+
 
 
