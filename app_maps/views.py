@@ -427,12 +427,31 @@ class TradocView(APIView):
                     )
                 tradoc = tradoc_service.get_tradoc_by_c_docum(c_docum)
 
-            return Response(data={
-                'message': "Tradoc retrieved successfully",
-                'content': tradoc
-            }, status=status.HTTP_200_OK)
+            return Response(tradoc, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response(data={
+            return Response({
                 "error": f"Internal server error: {str(e)}",
                 "message": "Failed to retrieve tradoc"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PathView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            
+            c_docum = request.query_params.get('c_docum')
+            if c_docum is None:
+                return Response(
+                    data={"message": "Ingrese código de documento", "content": None},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            tradoc_service = TradocService()
+            path = tradoc_service.get_path(c_docum)
+            return Response(path, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                data={"message": "Error al obtener el path", "content": None},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
